@@ -13,6 +13,7 @@ import {
 } from './services/api';
 import './App.css';
 import RetrievalControls from './components/RetrievalControls';
+import DataSimulator from './components/DataSimulator';
 
 function App() {
   const [vehicles, setVehicles] = useState([]);
@@ -266,6 +267,8 @@ function App() {
             onDataFetch={handleDataFetch}
             isRefreshing={isRefreshing}
           />
+
+          <DataSimulator onDataSent={() => loadVehicleData(selectedVehicle)} />
 
           {retrievalMode !== 'summary' && (
             <TelemetryTable
