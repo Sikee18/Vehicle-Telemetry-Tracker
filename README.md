@@ -4,7 +4,7 @@ A production-ready backend service for vehicle telemetry ingestion and retrieval
 
 ## Project Overview
 
-This service is designed to collect and manage structured telemetry data from both Fuel and Electric Vehicles (EV). It provides a RESTful API to ingest time-series operational data and retrieve it efficiently. The application is built with scalability and deployment in mind, migrating from MongoDB to a highly structured **Supabase (PostgreSQL)** database.
+This service is designed to collect and manage structured telemetry data from both Fuel and Electric Vehicles (EV). It provides a RESTful API to ingest time-series operational data and retrieve it efficiently. The application is built with scalability and deployment in mind, migrating from MongoDB to a highly structured **Supabase (PostgreSQL)** database. and then add element
 
 ## Tech Stack
 
