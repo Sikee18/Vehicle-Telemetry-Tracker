@@ -47,7 +47,7 @@ const ChartsPanel = ({ data, vehicleType }) => {
             <div className="section-card">
                 <div className="chart-wrapper">
                     <h3>Speed (km/h) vs Time</h3>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
                             <XAxis dataKey="timestamp" tickFormatter={formatTime} stroke="#9ca3af" fontSize={12} tickMargin={10} />
@@ -63,7 +63,7 @@ const ChartsPanel = ({ data, vehicleType }) => {
             <div className="section-card">
                 <div className="chart-wrapper">
                     <h3>Engine Temperature (°C) vs Time</h3>
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
                             <XAxis dataKey="timestamp" tickFormatter={formatTime} stroke="#9ca3af" fontSize={12} tickMargin={10} />
@@ -80,7 +80,7 @@ const ChartsPanel = ({ data, vehicleType }) => {
                 <div className="section-card">
                     <div className="chart-wrapper">
                         <h3>{vehicleType === 'FUEL' ? 'Fuel Level (%)' : 'Battery Level (%)'} vs Time</h3>
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height={250}>
                             <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
                                 <XAxis dataKey="timestamp" tickFormatter={formatTime} stroke="#9ca3af" fontSize={12} tickMargin={10} />
