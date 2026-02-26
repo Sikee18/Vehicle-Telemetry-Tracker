@@ -14,6 +14,8 @@ import {
 import './App.css';
 import RetrievalControls from './components/RetrievalControls';
 import DataSimulator from './components/DataSimulator';
+import DataIngestion from './components/DataIngestion';
+import NlpQuery from './components/NlpQuery';
 
 function App() {
   const [vehicles, setVehicles] = useState([]);
@@ -269,6 +271,8 @@ function App() {
           />
 
           <DataSimulator onDataSent={() => loadVehicleData(selectedVehicle)} />
+          <DataIngestion />
+          <NlpQuery />
 
           {retrievalMode !== 'summary' && (
             <TelemetryTable
