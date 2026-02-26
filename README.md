@@ -43,11 +43,16 @@ This service is designed to collect and manage structured telemetry data from bo
 
 ### Environment Variables
 
-Configure environment variables. A `.env` file is provided. Enter your Supabase project credentials (found under Project Settings -> API):
+Configure environment variables. A `.env` file is provided. Enter your Supabase project credentials and DeepSeek API Key:
 ```env
 PORT=3000
 SUPABASE_URL="https://your-project-id.supabase.co"
 SUPABASE_KEY="your-anon-or-service-role-key"
+DATABASE_URL="postgres://postgres:password@aws-0-xx.pooler.supabase.com:6543/postgres"
+
+# New Module Variables
+AI_READONLY_DATABASE_URL="postgres://ai_readonly:password@aws-0-xx.pooler.supabase.com:6543/postgres"
+DEEPSEEK_API_KEY="your-deepseek-api-key"
 ```
 
 ### Running the Application
@@ -76,6 +81,18 @@ npm run seed
 - **Indexing**: A compound index `(vehicle_id, timestamp DESC)` guarantees instant telemetry queries without expensive full table scans.
 - **RPC Aggregation**: Employs a specific PostgreSQL `get_vehicle_summary` function deployed on the Supabase edge. This minimizes memory load on the Node server and securely offloads analytic calculations.
 - **Centralized Error Handling**: Safely digests Supabase codes (like `23514` check violations) into uniform RESTful responses.
+
+## New Enterprise Features
+
+### 1. Universal Bulk Data Ingestion
+- Provides seamless Drag-and-Drop functionality for ingesting massive `.csv`, `.json`, and `.xlsx` payloads directly into the database.
+- Features backend chunking and parsing via `Node.js Streams` to guarantee **O(1) memory space complexity** even for multi-gigabyte files.
+- Drops data into a dynamically indexed `JSONB` Supabase column, establishing extreme schema flexibility while keeping instant query speeds via a PostgreSQL `GIN` Index.
+
+### 2. AI-Based NLP-to-SQL Querying & Export
+- Generates complex data retrieval queries using Natural Language Prompts via **DeepSeek / LangChain**.
+- Protects against AI Hallucinations using strict System Prompts mapping schemas explicitly, and crucially, operates through a dedicated restrictive `Read-Only PostgreSQL Role`.
+- Provides a "Universal Export" capability inside the UI to download NLP results natively as `.csv` or `.json`.
 
 ## API Documentation
 
@@ -106,3 +123,33 @@ npm run seed
 
 ### 5. Get Vehicle Summary
 **Endpoint:** `GET /vehicles/:vehicleId/summary`
+
+### 6. Universal Data Ingestion: File Upload
+**Endpoint:** `POST /ingestion/upload`
+**Content-Type:** `multipart/form-data` with a `file` field (.csv, .json, .xlsx).
+
+### 7. Universal Data Ingestion: Raw JSON
+**Endpoint:** `POST /ingestion/json`
+**Content-Type:** `application/json`
+**Payload:** JSON array or object directly in the body.
+
+### 8. AI NLP-to-SQL Query
+**Endpoint:** `POST /nlp/query`
+**Content-Type:** `application/json`
+**Payload:** 
+```json
+{
+  "query": "Show me all vehicle records from Mumbai"
+}
+```
+
+### 9. AI Results CSV Export
+**Endpoint:** `POST /nlp/export/csv`
+**Content-Type:** `application/json`
+**Payload:** 
+```json
+{
+  "data": [{ "id": 1, "col": "val" }]
+}
+```
+**Returns:** Text/CSV blob attachment
