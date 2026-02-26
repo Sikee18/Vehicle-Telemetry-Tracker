@@ -94,6 +94,38 @@ npm run seed
 - Protects against AI Hallucinations using strict System Prompts mapping schemas explicitly, and crucially, operates through a dedicated restrictive `Read-Only PostgreSQL Role`.
 - Provides a "Universal Export" capability inside the UI to download NLP results natively as `.csv` or `.json`.
 
+## 🚀 Deploying to Vercel
+
+Since both the frontend (Vite React) and backend (Express API) are housed in the same Monorepo, Vercel requires two separate project setups. 
+
+### Step 1: Deploying the Frontend (Vite)
+1. Go to your [Vercel Dashboard](https://vercel.com/new) and click **Add New Project**.
+2. Select your `Vehicle-Telemetry-Tracker` GitHub repository.
+3. In the "Configure Project" screen, open the **Root Directory** dropdown and select `frontend`.
+4. Vercel will automatically detect `Vite`. Leave the build command as `npm run build` and install command as `npm install`.
+5. Under Environment Variables, add:
+   - `VITE_API_URL`: Leave blank for now, or set to your future backend URL.
+6. Click **Deploy**.
+
+### Step 2: Deploying the Backend (Express API)
+1. Go back to your [Vercel Dashboard](https://vercel.com/new) and click **Add New Project**.
+2. Select your `Vehicle-Telemetry-Tracker` GitHub repository again.
+3. In the "Configure Project" screen, open the **Root Directory** dropdown and select `backend`.
+4. Vercel will likely detect `Node.js`. Ensure the Build Command is overridden to be **empty/blank** (Express APIs don't need a build step on Vercel).
+5. Open the Environment Variables section and paste all keys from your local `backend/.env` file:
+   - `DATABASE_URL`
+   - `AI_READONLY_DATABASE_URL`
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+   - `GROQ_API_KEY`
+6. Click **Deploy**. *(A `vercel.json` is already included to handle routing).*
+
+### Step 3: Link them Together
+1. Copy the Vercel Production Domain assigned to your newly deployed Backend (e.g., `https://my-backend-telemetry.vercel.app`).
+2. Go to your **Frontend** Project Settings in Vercel -> Environment Variables.
+3. Add/Update `VITE_API_URL` and paste the backend domain. Save it.
+4. Go to your Frontend Deployments tab, click the three dots on the latest, and press **Redeploy**.
+
 ## API Documentation
 
 ### 1. Ingest Telemetry Data
