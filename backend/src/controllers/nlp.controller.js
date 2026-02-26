@@ -1,9 +1,11 @@
-const { ChatDeepSeek } = require('@langchain/deepseek');
+const { ChatGroq } = require('@langchain/groq');
 const { PromptTemplate } = require('@langchain/core/prompts');
 const { Pool } = require('pg');
 const { Parser } = require('json2csv');
 
-// Initialize read-only connection pool to Postgres to ensure AI Hallucinations cannot destroy database.
+// Initialize connection pool to Postgres. 
+// Ideally this uses AI_READONLY_DATABASE_URL to prevent AI Hallucinations from destroying database.
+// If the user hasn't set it, we fallback to the standard DATABASE_URL.
 const connectionString = process.env.AI_READONLY_DATABASE_URL || process.env.DATABASE_URL;
 if (!connectionString) {
     console.warn("WARNING: Neither AI_READONLY_DATABASE_URL nor DATABASE_URL is set in environment.");
@@ -11,14 +13,14 @@ if (!connectionString) {
 
 const pool = new Pool({
     connectionString: connectionString,
-    // Add logic if SSL is required depending on your Supabase configuration
-    // ssl: { rejectUnauthorized: false } 
+    // Provide SSL config required by Supabase pooler connections
+    ssl: { rejectUnauthorized: false } 
 });
 
-// Configure the DeepSeek Model via LangChain
-const llm = new ChatDeepSeek({
-    apiKey: process.env.DEEPSEEK_API_KEY,
-    model: 'deepseek-chat',
+// Configure the Groq Model via LangChain
+const llm = new ChatGroq({
+    apiKey: process.env.GROQ_API_KEY,
+    model: 'llama-3.3-70b-versatile',
     temperature: 0, // 0 for exact deterministic querying (less hallucination)
 });
 
