@@ -1,10 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { UploadCloud, FileText, CheckCircle, AlertCircle, Loader } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 import './DataIngestion.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const DataIngestion = () => {
   const [activeTab, setActiveTab] = useState('upload'); // 'upload' or 'paste'
@@ -19,7 +17,7 @@ const DataIngestion = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/ingestion/upload`, formData, {
+      const response = await api.post('/ingestion/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setResult({ type: 'success', message: `Success! Ingested ${response.data.records_processed} records.` });
@@ -49,10 +47,10 @@ const DataIngestion = () => {
 
   const handlePasteSubmit = async () => {
     if (!jsonInput.trim()) return;
-    
+
     setLoading(true);
     setResult(null);
-    
+
     try {
       let parsedPayload;
       try {
@@ -61,7 +59,7 @@ const DataIngestion = () => {
         throw new Error("Invalid JSON format.");
       }
 
-      const response = await axios.post(`${API_BASE_URL}/ingestion/json`, parsedPayload);
+      const response = await api.post('/ingestion/json', parsedPayload);
       setResult({ type: 'success', message: `Success! Ingested ${response.data.records_processed} records.` });
       setJsonInput('');
     } catch (err) {
@@ -76,13 +74,13 @@ const DataIngestion = () => {
       <div className="section-header" style={{ marginBottom: '1rem' }}>
         <h2>Universal Data Ingestion</h2>
         <div className="header-tabs">
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'upload' ? 'active' : ''}`}
             onClick={() => setActiveTab('upload')}
           >
             File Upload
           </button>
-          <button 
+          <button
             className={`tab-btn ${activeTab === 'paste' ? 'active' : ''}`}
             onClick={() => setActiveTab('paste')}
           >
@@ -115,15 +113,15 @@ const DataIngestion = () => {
           </div>
         ) : (
           <div className="json-paste-area">
-            <textarea 
+            <textarea
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
               placeholder='[ { "sensor_id": "ABC", "value": 123 }, ... ]'
               disabled={loading}
               className="json-textarea"
             />
-            <button 
-              onClick={handlePasteSubmit} 
+            <button
+              onClick={handlePasteSubmit}
               disabled={loading || !jsonInput.trim()}
               className="primary-btn submit-btn"
             >

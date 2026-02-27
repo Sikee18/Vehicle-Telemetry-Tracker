@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Send, Download, Database, AlertCircle, Loader, Code } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 import './NlpQuery.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 const NlpQuery = () => {
   const [query, setQuery] = useState('');
@@ -21,7 +19,7 @@ const NlpQuery = () => {
     setResult(null);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/nlp/query`, { query });
+      const response = await api.post('/nlp/query', { query });
       setResult(response.data);
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'An error occurred while executing the query.');
@@ -32,11 +30,11 @@ const NlpQuery = () => {
 
   const handleExportCSV = async () => {
     if (!result || !result.data || result.data.length === 0) return;
-    
+
     setExportLoading(true);
     try {
-      const response = await axios.post(`${API_BASE_URL}/nlp/export/csv`, { data: result.data }, { responseType: 'blob' });
-      
+      const response = await api.post('/nlp/export/csv', { data: result.data }, { responseType: 'blob' });
+
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
@@ -66,18 +64,18 @@ const NlpQuery = () => {
   // Helper to extract dynamic headers from JSONB data structure
   const getDynamicHeaders = (dataArray) => {
     if (!dataArray || dataArray.length === 0) return [];
-    
+
     // We look at the first few rows to build a unified set of keys
     const headers = new Set();
     dataArray.slice(0, 10).forEach(row => {
       if (row.id) headers.add('id');
       if (row.created_at) headers.add('created_at');
-      
+
       if (row.data && typeof row.data === 'object') {
         Object.keys(row.data).forEach(key => headers.add(`data.${key}`));
       }
     });
-    
+
     return Array.from(headers);
   };
 
@@ -135,7 +133,7 @@ const NlpQuery = () => {
                   <Database className="icon-small" />
                   <span>{result.rowCount} Rows Found</span>
                 </div>
-                
+
                 <div className="export-controls">
                   <button className="secondary-btn" onClick={handleExportCSV} disabled={exportLoading}>
                     {exportLoading ? <Loader className="spinner" /> : <Download className="icon-small" />}
