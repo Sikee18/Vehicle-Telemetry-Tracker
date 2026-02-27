@@ -15,11 +15,11 @@ const chunkedInsert = async (data, batchSize = 1000) => {
         const chunk = data.slice(i, i + batchSize);
         // Map payload into { data: jsonb } format for the universal_data table
         const insertPayload = chunk.map(item => ({ data: item }));
-        
+
         const { error } = await supabase
             .from('universal_data')
             .insert(insertPayload);
-        
+
         if (error) {
             console.error('Supabase batch insert error:', error);
             throw error;
@@ -35,7 +35,7 @@ const chunkedInsert = async (data, batchSize = 1000) => {
 exports.ingestRawJson = async (req, res, next) => {
     try {
         const payload = req.body;
-        
+
         if (!payload || typeof payload !== 'object') {
             return res.status(400).json({ error: 'Invalid JSON payload. Must be an object or array.' });
         }
@@ -45,9 +45,11 @@ exports.ingestRawJson = async (req, res, next) => {
             return res.status(400).json({ error: 'Empty JSON payload.' });
         }
 
-        // Basic Zod Validation - ensuring data is generically standard objects
-        const universalSchema = z.array(z.record(z.any()));
-        const validatedData = universalSchema.parse(dataArray);
+        // Basic Validation - ensuring data is generically standard objects
+        const validatedData = dataArray.filter(item => typeof item === 'object' && item !== null && !Array.isArray(item));
+        if (validatedData.length === 0) {
+            return res.status(400).json({ error: 'No valid objects found in JSON payload.' });
+        }
 
         const insertedCount = await chunkedInsert(validatedData);
 
@@ -76,7 +78,7 @@ exports.ingestFile = async (req, res, next) => {
         if (originalname.endsWith('.csv') || mimetype === 'text/csv') {
             const bufferStream = new stream.PassThrough();
             bufferStream.end(buffer);
-            
+
             let currentChunk = [];
             let totalInserted = 0;
 
@@ -116,24 +118,24 @@ exports.ingestFile = async (req, res, next) => {
                     });
                 })
                 .on('error', (err) => next(err));
-            
+
             return; // Response handled in stream events
-        } 
-        
+        }
+
         // Handle XLSX
         else if (originalname.endsWith('.xlsx') || originalname.endsWith('.xls') || mimetype.includes('spreadsheetml')) {
             const workbook = xlsx.read(buffer, { type: 'buffer' });
             const sheetName = workbook.SheetNames[0]; // grab first sheet
             parsedData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-        } 
-        
+        }
+
         // Handle JSON
         else if (originalname.endsWith('.json') || mimetype === 'application/json') {
             const jsonString = buffer.toString('utf8');
             const data = JSON.parse(jsonString);
             parsedData = Array.isArray(data) ? data : [data];
-        } 
-        
+        }
+
         else {
             return res.status(400).json({ error: 'Unsupported file type. Please upload CSV, JSON, or XLSX.' });
         }

@@ -14,7 +14,7 @@ if (!connectionString) {
 const pool = new Pool({
     connectionString: connectionString,
     // Provide SSL config required by Supabase pooler connections
-    ssl: { rejectUnauthorized: false } 
+    ssl: { rejectUnauthorized: false }
 });
 
 // Configure the Groq Model via LangChain
@@ -61,7 +61,7 @@ const promptTemplate = new PromptTemplate({
 exports.generateAndExecuteQuery = async (req, res, next) => {
     try {
         const { query } = req.body;
-        
+
         if (!query) {
             return res.status(400).json({ error: 'Query parameter is missing.' });
         }
@@ -69,7 +69,7 @@ exports.generateAndExecuteQuery = async (req, res, next) => {
         // 1. Generate SQL from Natural Language
         const formattedPrompt = await promptTemplate.format({ query });
         const aiResponse = await llm.invoke(formattedPrompt);
-        
+
         // Clean the AI response to get raw SQL
         let generatedSql = aiResponse.content.trim();
         if (generatedSql.startsWith('```sql')) {
@@ -80,9 +80,9 @@ exports.generateAndExecuteQuery = async (req, res, next) => {
 
         // 2. Security Check #1: Reject immediately if not SELECT
         if (!generatedSql.toLowerCase().startsWith('select')) {
-            return res.status(403).json({ 
+            return res.status(403).json({
                 error: 'Query violation detected. Only SELECT statements are permitted.',
-                generatedSql 
+                generatedSql
             });
         }
 
@@ -99,9 +99,9 @@ exports.generateAndExecuteQuery = async (req, res, next) => {
 
     } catch (error) {
         console.error("NLP Query Error:", error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             error: 'Failed to process and execute natural language query.',
-            details: error.message 
+            details: error.message
         });
     }
 };

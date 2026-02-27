@@ -1,187 +1,114 @@
-# Vehicle Telemetry Tracker
+# 🚗 Universal Vehicle Telemetry & NLP Analytics Platform
 
-A production-ready backend service for vehicle telemetry ingestion and retrieval.
+This project is a full-stack, real-time dashboard and AI-driven analytics platform designed to track, monitor, and query vehicle telemetry data. It features a scalable backend capable of processing massive datasets via Node.js streams, and an interactive React frontend equipped with a natural language (NLP) querying engine powered by Groq and LangChain.
 
-## Project Overview
+## 🌟 Key Features
 
-This service is designed to collect and manage structured telemetry data from both Fuel and Electric Vehicles (EV). It provides a RESTful API to ingest time-series operational data and retrieve it efficiently. The application is built with scalability and deployment in mind, migrating from MongoDB to a highly structured **Supabase (PostgreSQL)** database. and then add element
+### 1. 🛡️ Secure API Ingestion
+A protected `/telemetry` endpoint that requires an `x-api-key` header to securely ingest live data from IoT devices or vehicles. Unauthorized attempts are instantly rejected with HTTP 401.
 
-## Tech Stack
+### 2. 📊 Universal Data Ingestion (Chunked Streams)
+A robust `DataIngestion` engine capable of parsing massive CSVs, JSON, and XLSX files. It utilizes Node.js streams to keep memory overhead at `O(1)` and performs chunked bulk inserts directly into Supabase, allowing users to upload datasets with millions of rows without crashing the browser or server.
 
-- **Node.js**: JavaScript runtime environment.
-- **Express.js**: Fast, unopinionated, minimalist web framework for Node.js.
-- **Supabase**: Open-source Firebase alternative leveraging PostgreSQL for scalable and strongly constrained relational data.
-- **@supabase/supabase-js**: Library to interact with Supabase instances.
-- **Joi**: Powerful schema description language and data validator for JavaScript.
-- **dotenv**: Loads environment variables from a `.env` file.
+### 3. 🧠 AI-Powered NLP Analytics
+An integrated "AI Query Assistant" powered by the **Groq Llama 3** LLM. 
+- You can ask natural language questions (e.g., *"Count the total number of telemetry records"* or *"Show me all vehicles that went faster than 100 km/h"*).
+- The AI safely translates your sentence into raw PostgreSQL syntax via LangChain.
+- The SQL strictly executes against the Supabase database and instantly renders the results into a dynamic data table. 
+- You can quickly export the AI's findings to **CSV** or **JSON** with one click.
 
-## Setup Instructions
+### 4. 📈 Real-Time Dashboards & Visualizations
+A sleek React frontend featuring:
+- **KPI Cards**: Instantly recalculate average speeds, peak engine temperatures, and lowest battery/fuel levels entirely on the backend via O(1) PostgreSQL RPC calculations. 
+- **Recharts**: Dynamic line charts plotting Speed, Engine Temperature, and Battery/Fuel levels chronologically.
+- **Historical Ranges**: Controls to dynamically fetch 'Latest', 'Recent', or 'Custom Range' telemetry blocks (1hr, 24hr, 7 days).
+- **Data Simulator**: A built-in security simulator to live-test the API Key authorization flow visually.
+
+---
+
+## 🛠️ Tech Stack Architecture
+
+### Backend
+* **Runtime**: Node.js & Express.js
+* **Database**: PostgreSQL (hosted on Supabase)
+* **AI/NLP**: `@langchain/groq` using the `llama-3.3-70b-versatile` model.
+* **Security**: Custom API Key Middleware & JSON Web Tokens (JWT).
+* **Data Processing**: `csv-parser` for streaming, `xlsx` for Excel sheets, `zod` for payload validation.
+
+### Frontend
+* **Framework**: React + Vite
+* **Styling**: Vanilla CSS with modern UI/UX principles (Glassmorphism, Dark Mode, CSS Variables).
+* **Data Fetching**: Axios
+* **Charts**: Recharts
+* **Icons**: Lucide React
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
+1. **Node.js**: v18 or higher.
+2. **Supabase**: A Supabase project with a `telemetry` table and a `universal_data` JSONB table.
+3. **Groq API Key**: A free key from the Groq Developer Console.
 
-- Node.js (v18+ recommended)
-- A Supabase Project (Create one for free at [supabase.com](https://supabase.com/))
+### 1. Environment Setup
 
-### Installation
+**Backend `.env` Configuration**
+Create a `.env` file in the `/backend` directory:
+```env
+PORT=3000
+SUPABASE_URL="https://[YOUR_INSTANCE].supabase.co"
+SUPABASE_KEY="[YOUR_SERVICE_ROLE_KEY]"
+INGESTION_API_KEY="hackathon_secret_key_123"
 
-1. Clone this repository or download the source code.
-2. Navigate to the project directory:
-   ```bash
-   cd "vehicle telemetry tracker"
-   ```
-3. Install dependencies:
+# AI Configuration
+GROQ_API_KEY="gsk_..."
+
+# PostgreSQL Connection Strings
+DATABASE_URL="postgresql://postgres.[INSTANCE]:[PASSWORD]@[POOLER_URL]:6543/postgres?pgbouncer=true"
+AI_READONLY_DATABASE_URL="postgresql://postgres.[INSTANCE]:[PASSWORD]@[POOLER_URL]:6543/postgres?pgbouncer=true"
+```
+
+**Frontend `.env` Configuration**
+Create a `.env` file in the `/frontend` directory:
+```env
+VITE_API_URL="http://localhost:3000"
+```
+
+### 2. Installation & Running
+
+1. **Install Dependencies**
+   Navigate to both the `backend` and `frontend` folders and run:
    ```bash
    npm install
    ```
 
-### Database Initialization
+2. **Start the Backend**
+   ```bash
+   cd backend
+   npm run dev
+   ```
+   *(The server will start on port 3000)*
 
-1. Go to your Supabase Dashboard -> **SQL Editor**.
-2. Open the file `supabase_setup.sql` provided in this project's root directory.
-3. Copy the contents of `supabase_setup.sql` and execute it in your Supabase SQL Editor.
-   *This will create your `telemetry` table, apply correct scaling constraints, disable Row Level Security (RLS) for testing, and scaffold an RPC function for data aggregation.*
+3. **Start the Frontend**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+   *(The Vite dashboard will be available at http://localhost:5173)*
 
-### Environment Variables
-
-Configure environment variables. A `.env` file is provided. Enter your Supabase project credentials and DeepSeek API Key:
-```env
-PORT=3000
-SUPABASE_URL="https://your-project-id.supabase.co"
-SUPABASE_KEY="your-anon-or-service-role-key"
-DATABASE_URL="postgres://postgres:password@aws-0-xx.pooler.supabase.com:6543/postgres"
-
-# New Module Variables
-AI_READONLY_DATABASE_URL="postgres://ai_readonly:password@aws-0-xx.pooler.supabase.com:6543/postgres"
-DEEPSEEK_API_KEY="your-deepseek-api-key"
-```
-
-### Running the Application
-
-**Development Mode (auto-reloads on changes):**
+### 3. Seeding the Database (Optional)
+If your database is empty, you can generate 500 rows of fake telemetry data to instantly view the dashboards:
 ```bash
-npm run dev
+cd backend
+node seed.js
 ```
 
-**Production Mode:**
-```bash
-npm start
-```
+---
 
-### Seeding the Database (Optional)
-
-To test the APIs with synthetic data, you can run the provided seed script. This will insert telemetry data for 10 vehicles (5 FUEL, 5 EV) over the past 24 hours.
-
-```bash
-npm run seed
-```
-
-## Scalability & Performance
-
-- **PostgreSQL Constraints**: Enforcing required fields conditionally via SQL `CHECK` constraints prevents malformed payloads directly at the DB layer.
-- **Indexing**: A compound index `(vehicle_id, timestamp DESC)` guarantees instant telemetry queries without expensive full table scans.
-- **RPC Aggregation**: Employs a specific PostgreSQL `get_vehicle_summary` function deployed on the Supabase edge. This minimizes memory load on the Node server and securely offloads analytic calculations.
-- **Centralized Error Handling**: Safely digests Supabase codes (like `23514` check violations) into uniform RESTful responses.
-
-## New Enterprise Features
-
-### 1. Universal Bulk Data Ingestion
-- Provides seamless Drag-and-Drop functionality for ingesting massive `.csv`, `.json`, and `.xlsx` payloads directly into the database.
-- Features backend chunking and parsing via `Node.js Streams` to guarantee **O(1) memory space complexity** even for multi-gigabyte files.
-- Drops data into a dynamically indexed `JSONB` Supabase column, establishing extreme schema flexibility while keeping instant query speeds via a PostgreSQL `GIN` Index.
-
-### 2. AI-Based NLP-to-SQL Querying & Export
-- Generates complex data retrieval queries using Natural Language Prompts via **DeepSeek / LangChain**.
-- Protects against AI Hallucinations using strict System Prompts mapping schemas explicitly, and crucially, operates through a dedicated restrictive `Read-Only PostgreSQL Role`.
-- Provides a "Universal Export" capability inside the UI to download NLP results natively as `.csv` or `.json`.
-
-## 🚀 Deploying to Vercel
-
-Since both the frontend (Vite React) and backend (Express API) are housed in the same Monorepo, Vercel requires two separate project setups. 
-
-### Step 1: Deploying the Frontend (Vite)
-1. Go to your [Vercel Dashboard](https://vercel.com/new) and click **Add New Project**.
-2. Select your `Vehicle-Telemetry-Tracker` GitHub repository.
-3. In the "Configure Project" screen, open the **Root Directory** dropdown and select `frontend`.
-4. Vercel will automatically detect `Vite`. Leave the build command as `npm run build` and install command as `npm install`.
-5. Under Environment Variables, add:
-   - `VITE_API_URL`: Leave blank for now, or set to your future backend URL.
-6. Click **Deploy**.
-
-### Step 2: Deploying the Backend (Express API)
-1. Go back to your [Vercel Dashboard](https://vercel.com/new) and click **Add New Project**.
-2. Select your `Vehicle-Telemetry-Tracker` GitHub repository again.
-3. In the "Configure Project" screen, open the **Root Directory** dropdown and select `backend`.
-4. Vercel will likely detect `Node.js`. Ensure the Build Command is overridden to be **empty/blank** (Express APIs don't need a build step on Vercel).
-5. Open the Environment Variables section and paste all keys from your local `backend/.env` file:
-   - `DATABASE_URL`
-   - `AI_READONLY_DATABASE_URL`
-   - `SUPABASE_URL`
-   - `SUPABASE_KEY`
-   - `GROQ_API_KEY`
-6. Click **Deploy**. *(A `vercel.json` is already included to handle routing).*
-
-### Step 3: Link them Together
-1. Copy the Vercel Production Domain assigned to your newly deployed Backend (e.g., `https://my-backend-telemetry.vercel.app`).
-2. Go to your **Frontend** Project Settings in Vercel -> Environment Variables.
-3. Add/Update `VITE_API_URL` and paste the backend domain. Save it.
-4. Go to your Frontend Deployments tab, click the three dots on the latest, and press **Redeploy**.
-
-## API Documentation
-
-### 1. Ingest Telemetry Data
-**Endpoint:** `POST /telemetry`
-
-**Example Request Payload (FUEL):**
-```json
-{
-  "vehicleId": "V-1234",
-  "vehicleType": "FUEL",
-  "timestamp": "2023-11-01T10:00:00Z",
-  "speed": 85,
-  "engineTemperature": 90,
-  "fuelLevel": 45.5,
-  "fuelConsumptionRate": 8.2
-}
-```
-
-### 2. Get Latest Telemetry
-**Endpoint:** `GET /vehicles/:vehicleId/latest`
-
-### 3. Get Recent Telemetry
-**Endpoint:** `GET /vehicles/:vehicleId/recent?limit=10`
-
-### 4. Get Telemetry within Time Range
-**Endpoint:** `GET /vehicles/:vehicleId?start=ISODate&end=ISODate`
-
-### 5. Get Vehicle Summary
-**Endpoint:** `GET /vehicles/:vehicleId/summary`
-
-### 6. Universal Data Ingestion: File Upload
-**Endpoint:** `POST /ingestion/upload`
-**Content-Type:** `multipart/form-data` with a `file` field (.csv, .json, .xlsx).
-
-### 7. Universal Data Ingestion: Raw JSON
-**Endpoint:** `POST /ingestion/json`
-**Content-Type:** `application/json`
-**Payload:** JSON array or object directly in the body.
-
-### 8. AI NLP-to-SQL Query
-**Endpoint:** `POST /nlp/query`
-**Content-Type:** `application/json`
-**Payload:** 
-```json
-{
-  "query": "Show me all vehicle records from Mumbai"
-}
-```
-
-### 9. AI Results CSV Export
-**Endpoint:** `POST /nlp/export/csv`
-**Content-Type:** `application/json`
-**Payload:** 
-```json
-{
-  "data": [{ "id": 1, "col": "val" }]
-}
-```
-**Returns:** Text/CSV blob attachment
+## 🔐 Security Architecture Notes
+1. **Data Ingestion**: The `/telemetry` POST route is protected by `requireApiKey` middleware.
+2. **AI SQL Execution**: The NLP natural language processor implements multiple levels of defense:
+   - **Prompt Engineering**: The LLM system prompt strictly forbids DML/DDL generation (INSERT, DROP, ALTER).
+   - **Regex Checking**: The Express Controller forcefully rejects any generated string that does not explicitly begin with `SELECT`.
+   - *(Optional Production Security)*: The `AI_READONLY_DATABASE_URL` is configured to ideally route through a locked-down, read-only PostgreSQL user role to prevent AI hallucination destruction at the infrastructure level.
