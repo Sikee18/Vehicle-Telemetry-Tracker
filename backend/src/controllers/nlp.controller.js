@@ -34,18 +34,35 @@ CRITICAL SECURITY INSTRUCTIONS:
 2. Only query the schema specified below.
 
 DATABASE SCHEMA:
-- Table Name: public.universal_data
-- Columns:
-  1. id (uuid, primary key)
-  2. created_at (timestamp with time zone)
-  3. data (jsonb)
 
-The 'data' column contains dynamic JSON objects. To query specific attributes within the 'data' JSONB column, you must use PostgreSQL JSONB operators (like ->, ->>, @>, etc.).
+1. Table Name: public.telemetry
+   Columns:
+   - id (uuid, primary key)
+   - vehicle_id (text)
+   - vehicle_type (text, either 'FUEL' or 'EV')
+   - timestamp (timestamp with time zone)
+   - speed (numeric)
+   - engine_temperature (numeric)
+   - fuel_level (numeric)
+   - fuel_consumption_rate (numeric)
+   - battery_level (numeric)
+   - energy_consumption_rate (numeric)
+
+2. Table Name: public.universal_data
+   Columns:
+   - id (uuid, primary key)
+   - created_at (timestamp with time zone)
+   - data (jsonb)
+
+If the user asks about vehicles, speed, temperature, or fuel, query the 'telemetry' table. Example:
+SELECT * FROM public.telemetry WHERE engine_temperature > 80;
+
+The 'data' column in 'universal_data' contains dynamic JSON objects. To query specific attributes within the 'data' JSONB column, you must use PostgreSQL JSONB operators (like ->, ->>, @>, etc.).
 Example: If the user asks for records where city is 'London', you should write:
 SELECT * FROM public.universal_data WHERE data->>'city' = 'London';
 
 If the user asks "Show me all data", you should write:
-SELECT * FROM public.universal_data LIMIT 100;
+SELECT * FROM public.telemetry ORDER BY timestamp DESC LIMIT 100;
 
 Return ONLY the raw SQL query. No other text.
 
