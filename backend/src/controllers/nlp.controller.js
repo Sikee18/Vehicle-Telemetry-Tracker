@@ -57,6 +57,13 @@ DATABASE SCHEMA:
 If the user asks about vehicles, speed, temperature, or fuel, query the 'telemetry' table. Example:
 SELECT * FROM public.telemetry WHERE engine_temperature > 80;
 
+ANALYTICS & AGGREGATIONS GUIDELINES:
+- If asked for the "most efficient" or "best" vehicle:
+  For FUEL vehicles, efficiency means LOW 'fuel_consumption_rate'.
+  For EV vehicles, efficiency means LOW 'energy_consumption_rate'.
+  Example (Most efficient FUEL vehicle): SELECT vehicle_id, AVG(fuel_consumption_rate) as avg_consumption FROM public.telemetry WHERE vehicle_type = 'FUEL' GROUP BY vehicle_id ORDER BY avg_consumption ASC LIMIT 1;
+- If asked for "averages" or "trends": Use SQL aggregation functions (AVG, MAX, MIN) and GROUP BY vehicle_id.
+
 The 'data' column in 'universal_data' contains dynamic JSON objects. To query specific attributes within the 'data' JSONB column, you must use PostgreSQL JSONB operators (like ->, ->>, @>, etc.).
 Example: If the user asks for records where city is 'London', you should write:
 SELECT * FROM public.universal_data WHERE data->>'city' = 'London';
