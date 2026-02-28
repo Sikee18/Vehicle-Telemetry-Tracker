@@ -5,7 +5,7 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 const api = axios.create({
     baseURL: API_BASE_URL,
-    timeout: 60000, // 60 seconds to allow for complex AI queries
+    timeout: 180000, // 3 minutes to survive Render Deep Sleep cold starts
 });
 
 export const fetchVehicles = async () => {
